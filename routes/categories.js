@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 let categoryModel = require('../schemas/category')
+let productModel = require('../schemas/product')
 
 
 /* GET users listing. */

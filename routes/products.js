@@ -2,7 +2,7 @@ var express = require('express');
 const { ConnectionCheckOutFailedEvent } = require('mongodb');
 var router = express.Router();
 let productModel = require('../schemas/product')
-let CategoryModel = require('../schemas/category')
+let categoryModel = require('../schemas/category')
 
 function buildQuery(obj){
   console.log(obj);
@@ -145,6 +145,64 @@ router.delete('/:id', async function(req, res, next) {
       success:false,
       message:error.message
     });
+  }
+});
+
+// Hiển thị tất cả sản phẩm trong category theo slug
+router.get('/slug/:category', async function (req, res, next) {
+  try {
+      let categorySlug = req.params.category;
+      let category = await categoryModel.findOne({ slug: categorySlug });
+      if (!category) {
+          return res.status(404).send({
+              success: false,
+              message: "Category không tồn tại"
+          });
+      }
+      let products = await productModel.find({ category: category._id });
+      res.status(200).send({
+          success: true,
+          data: products
+      });
+  } catch (error) {
+      res.status(500).send({
+          success: false,
+          message: error.message
+      });
+  }
+});
+
+// Hiển thị sản phẩm cụ thể theo slug
+router.get('/slug/:category/:product', async function (req, res, next) {
+  try {
+      let categorySlug = req.params.category;
+      let productSlug = req.params.product;
+
+      let category = await categoryModel.findOne({ slug: categorySlug });
+      if (!category) {
+          return res.status(404).send({
+              success: false,
+              message: "Category không tồn tại"
+          });
+      }
+
+      let product = await productModel.findOne({ slug: productSlug, category: category._id });
+      if (!product) {
+          return res.status(404).send({
+              success: false,
+              message: "Product không tồn tại"
+          });
+      }
+
+      res.status(200).send({
+          success: true,
+          data: product
+      });
+  } catch (error) {
+      res.status(500).send({
+          success: false,
+          message: error.message
+      });
   }
 });
 module.exports = router;
